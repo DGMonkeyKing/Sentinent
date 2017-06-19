@@ -1,0 +1,219 @@
+package drools.rules
+ 
+import drools.motorEmociones.*;
+import drools.motorEmociones.MotorEmociones.Emociones;
+import drools.motorEmociones.MotorEmociones.TipoMensaje;
+ 
+
+
+rule "La palabra denota felicidad"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj == id , $w : word , $p : pos);
+       not(exists(Palabra(word == "no", (pos < $p))));
+       diccionario : Diccionario(emocion == Emociones.FELIZ);
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.FELIZ);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra de felicidad: " + $w);
+end
+
+rule "La palabra denota tristeza"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj ==  id , $w : word , $p : pos);
+       diccionario : Diccionario(emocion == Emociones.TRISTE);
+       not(exists(Palabra(word == "no", (pos < $p))));
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.TRISTE);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra de tristeza: " + $w);
+end
+
+rule "La palabra denota confusion"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj == id , $w : word , $p : pos);
+       diccionario : Diccionario(emocion == Emociones.CONFUNDIDO);
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Palabra(word == "no", (pos < $p))));
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.CONFUNDIDO);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra de confusion: " + $w);
+end
+
+rule "La palabra denota enfado"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj == id,$w : word , $p : pos);
+       diccionario : Diccionario(emocion == Emociones.ENFADADO);
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Palabra(word == "no", (pos < $p))));
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.ENFADADO);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra de enfado: " + $w);
+end
+
+rule "La palabra denota sorpresa"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj == id , $w : word , $p : pos);
+       diccionario : Diccionario(emocion == Emociones.SORPRENDIDO);
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Palabra(word == "no", (pos < $p))));
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.SORPRENDIDO);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra de sorpresa: " + $w);
+end
+
+
+rule "La palabra denota tristeza porque hay negacion"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj == id , $w : word , $p : pos);
+       diccionario : Diccionario(emocion == Emociones.FELIZ);
+       palabra2: Palabra($idObj == id, word == "no", (pos < $p));
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.TRISTE);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra de tristeza por negacion: " + $w);
+end
+
+rule "La palabra denota felicidad porque hay negacion"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj ==  id , $w : word, $p : pos);
+       diccionario : Diccionario(emocion == Emociones.TRISTE);
+       Palabra(word == "no", (pos < $p));
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.FELIZ);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra de felicidad por negacion: " + $w);
+end
+
+rule "La palabra denota neutralidad porque hay negacion"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj == id,$w : word, $p : pos);
+       Palabra(word == "no", (pos < $p));
+       diccionario : Diccionario(emocion == Emociones.ENFADADO);
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.NEUTRO);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra neutra por negacion: " + $w);
+end
+
+rule "La palabra denota neutralidad porque hay negacion II"
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj == id , $w : word, $p : pos);
+       Palabra(word == "no", (pos < $p));
+       diccionario : Diccionario(emocion == Emociones.SORPRENDIDO);
+       eval(diccionario.existePalabra($w) == true);
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(Emociones.NEUTRO);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra neutra por negacion: " + $w);
+end
+
+
+rule "La palabra no denota nada"
+salience -1
+    when
+       $decidirSentimiento : DecidirSentimiento(numPalabrasActuales < numPalabrasTotales , $idObj:id);
+       palabra : Palabra($idObj == id , $w : word);
+       not(exists(Mensaje()))
+    then
+       $decidirSentimiento.incrementaEmocion(null);
+       update($decidirSentimiento);
+       retract(palabra);
+       System.out.println("Palabra de NADA: " + $w);
+end
+
+
+rule "Se inserta nueva palabra"
+salience 101
+when
+	$mensaje: Mensaje(tipo == TipoMensaje.INSERTAR, w:arg1, emocion2:arg2);
+	$diccionario : Diccionario(emocion == emocion2);
+then
+	$diccionario.addPalabra(w);
+	update($diccionario);
+	retract($mensaje);
+end
+
+rule "Se elimina una palabra"
+salience 101
+when
+	$mensaje: Mensaje(tipo == TipoMensaje.ELIMINAR, $w:arg1);
+	$diccionario : Diccionario();
+    eval($diccionario.existePalabra($w) == true);
+then
+	$diccionario.eliminarPalabra($w);
+	update($diccionario);
+	retract($mensaje);
+end
+/*
+rule "Se cambia sentimientos"
+when
+	$mensaje: Mensaje(tipo == TipoMensaje.CAMBIAR, $em1:arg1, $em2:arg2);
+	$diccionario1 : Diccionario(emocion == (Emociones)$em1);
+	$diccionario2 : Diccionario(emocion == (Emociones)$em2);
+then
+	$diccionario1.setEmocion($em2);
+	$diccionario2.setEmocion($em1);
+	update($diccionario1);
+	update($diccionario2);
+	retract($mensaje);
+end
+*/
+
+rule "Se cambia sentimientos"
+salience 101
+when
+	$mensaje: Mensaje(tipo == TipoMensaje.CAMBIAR, $em1:arg1, $em2:arg2);
+	$diccionario1 : Diccionario(emocion == (Emociones)$em1);
+	$diccionario2 : Diccionario(emocion == (Emociones)$em2);
+then
+	$diccionario1.setEmocion($em2);
+	$diccionario2.setEmocion($em1);
+	update($diccionario1);
+	update($diccionario2);
+	retract($mensaje);
+end
+
+rule "Finalizar Decision"
+	when 
+		$decidirSentimiento : DecidirSentimiento( numPalabrasActuales == numPalabrasTotales, emocion == null , $i:id);
+       not(exists(Mensaje()))
+	then
+		update($decidirSentimiento);
+		System.out.println("Se ha resuelto la frase " + $i);
+		System.out.println($decidirSentimiento.solve());
+end
